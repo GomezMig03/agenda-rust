@@ -1,4 +1,7 @@
-use std::io::stdin;
+use std::io::{self, stdin, Write};
+use std::fs::{File, OpenOptions};
+
+static AGENDA: &str = "./agenda.txt";
 
 fn main() {
     main_loop();
@@ -25,4 +28,23 @@ fn main_loop() {
             _ => println!("Select a valid option.")
         }
     }
+}
+
+fn get_file() -> io::Result<File> {
+    OpenOptions::new()
+        .read(true)
+        .create(true)
+        .append(true)
+        .open(AGENDA)
+}
+
+fn write_record(record: &str) -> io::Result<()>{
+    let mut file = get_file()?;
+
+    writeln!(file, "{}", record)?;
+    Ok(())
+}
+
+fn write_handler() {
+    todo!()
 }

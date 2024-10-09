@@ -1,5 +1,5 @@
-use core::str;
-use std::io::{self, stdin, Write};
+use core::{fmt, str};
+use std::io::{self, Write};
 use std::fs::{File, OpenOptions};
 use text_io::read;
 
@@ -34,6 +34,40 @@ fn main_loop() -> io::Result<()> {
     Ok(())
 }
 
+struct Date {
+    day: u8,
+    month: u8,
+    year: u32,
+}
+
+impl Date {
+    fn new(day: u8, month: u8, year: u32) -> Date {
+        Date{day, month, year}
+    }
+    fn as_string(&self) -> String {
+        return format!("{}-{}-{}", self.day, self.month, self.year);
+    }
+}
+
+struct Agenda{
+    event: String,
+    date: Date,
+    desc: String,
+    id: usize
+}
+
+impl Agenda {
+    fn new(event: String, date: Date, desc: String, id: usize) -> Agenda {
+        Agenda{
+            event, date, desc, id,
+        }
+    }
+
+    fn as_string(&self) -> String {
+        format!("{};{};{};{},", self.id, self.event, self.date.as_string(), self.desc)
+    }
+}
+
 fn get_file() -> io::Result<File> {
     OpenOptions::new()
         .read(true)
@@ -46,13 +80,14 @@ fn write_record() -> io::Result<()>{
     let mut file = get_file()?;
     let record = write_handler();
 
-    writeln!(file, "{}", record)?;
+    write!(file, "{}", record)?;
     Ok(())
 }
 
 fn write_handler() -> String {
     let mut event = String::new();
-    let desc = String::from("test");
+    let mut desc = String::from("test");
+    let record_id: usize = 1;
 
     let mut day: u8;
     let mut month: u8;
@@ -69,26 +104,24 @@ fn write_handler() -> String {
     while {
         print!("\nWrite the day of the event: ");
         day = read!();
-        day >= 31
+        day > 31
     } {}
 
     while {
         print!("\nWrite the month of the event: ");
         month = read!();
-        month >= 12
+        month > 12
     } {}
 
     while {
         print!("\nWrite the year of the event: ");
         year = read!();
-        year <= 2024
+        year < 2024
     } {}
 
-    let date = write_formatter(day, month, year);
+    let date = Date::new(day, month, year);
 
-    format!("{};{};{},", event, date, desc)
-}
+    let agenda = Agenda::new(event, date, desc, record_id);
 
-fn write_formatter(day: u8, month: u8, year: u32) -> String {
-    format!("{}-{}-{}", day, month, year)
+    agenda.as_string()
 }

@@ -51,14 +51,20 @@ fn write_record() -> io::Result<()>{
 }
 
 fn write_handler() -> String {
-    let mut event = String::from("Default-name");
+    let mut event = String::new();
     let desc = String::from("test");
 
     let mut day: u8;
     let mut month: u8;
     let mut year: u32;
-    print!("Write an event name: ");
-    event = read!();
+
+    while {
+        print!("Write an event name: ");
+        event = read!();
+        event.contains(";") && event.contains(",")
+    } {}
+    
+    
 
     while {
         print!("\nWrite the day of the event: ");

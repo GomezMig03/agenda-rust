@@ -1,6 +1,7 @@
-use core::{fmt, str};
+use core::str;
+use std::fmt::format;
 use std::io::{self, Write};
-use std::fs::{File, OpenOptions};
+use std::fs::{File, OpenOptions, read_to_string};
 use text_io::read;
 
 static AGENDA: &str = "./agenda.txt";
@@ -45,7 +46,7 @@ impl Date {
         Date{day, month, year}
     }
     fn as_string(&self) -> String {
-        return format!("{}-{}-{}", self.day, self.month, self.year);
+        format!("{}-{}-{}", self.day, self.month, self.year)
     }
 }
 
@@ -66,6 +67,26 @@ impl Agenda {
     fn as_string(&self) -> String {
         format!("{};{};{};{},", self.id, self.event, self.date.as_string(), self.desc)
     }
+
+    fn display(&self) -> String {
+        format!("Id: {}\nEvent: {}\nDate: {}\nDescription:{}\n", self.id, self.event, self.date.as_string(), self.desc)
+    }
+
+    fn record_to_agenda(record: String) -> Agenda {
+        let record_parts: Vec<&str> = record.split(";").collect();
+
+        let date_parts: Vec<&str> = record_parts[2].split("-").collect();
+
+        let day: u8 = date_parts[0].parse().expect("Error parsing day.");
+        let month: u8 = date_parts[1].parse().expect("Error parsing month.");
+        let year: u32 = date_parts[2].parse().expect("Error parsing year.");
+
+        let date = Date::new(day, month, year);
+
+        let id: usize = record_parts[0].parse().expect("Error parsing id"); 
+
+        Agenda { event: String::from(record_parts[1]), date, desc: String::from(record_parts[3]), id }
+    }
 }
 
 fn get_file() -> io::Result<File> {
@@ -75,6 +96,8 @@ fn get_file() -> io::Result<File> {
         .append(true)
         .open(AGENDA)
 }
+
+
 
 fn write_record() -> io::Result<()>{
     let mut file = get_file()?;

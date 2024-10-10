@@ -1,5 +1,4 @@
 use core::str;
-use std::fmt::format;
 use std::io::{self, Write};
 use std::fs::{File, OpenOptions, read_to_string};
 use text_io::read;
@@ -25,7 +24,7 @@ fn main_loop() -> io::Result<()> {
 
         match user_input.as_str() {
             "0" => return Ok(()),
-            "1" => todo!(),
+            "1" => read_agenda()?,
             "2" => todo!(),
             "3" => write_record()?,
             "4" => todo!(),
@@ -65,14 +64,17 @@ impl Agenda {
     }
 
     fn as_string(&self) -> String {
-        format!("{};{};{};{},", self.id, self.event, self.date.as_string(), self.desc)
+        if self.id == 1 {
+            return format!("{};{};{};{}", self.id, self.event, self.date.as_string(), self.desc);
+        }
+        format!(",{};{};{};{}", self.id, self.event, self.date.as_string(), self.desc)
     }
 
     fn display(&self) -> String {
-        format!("Id: {}\nEvent: {}\nDate: {}\nDescription:{}\n", self.id, self.event, self.date.as_string(), self.desc)
+        format!("Id: {}\nEvent: {}\nDate: {}\nDescription: {}", self.id, self.event, self.date.as_string(), self.desc)
     }
 
-    fn record_to_agenda(record: String) -> Agenda {
+    fn record_to_agenda(record: &str) -> Agenda {
         let record_parts: Vec<&str> = record.split(";").collect();
 
         let date_parts: Vec<&str> = record_parts[2].split("-").collect();
@@ -97,7 +99,20 @@ fn get_file() -> io::Result<File> {
         .open(AGENDA)
 }
 
+fn read_agenda() -> io::Result<()>{
+    let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
 
+    let records: Vec<&str> = content.split(",").collect();
+    
+    println!();
+
+    for record in records {
+        let agenda = Agenda::record_to_agenda(record);
+        println!("{}\n", agenda.display());
+    }
+
+    Ok(())
+}
 
 fn write_record() -> io::Result<()>{
     let mut file = get_file()?;
@@ -108,9 +123,9 @@ fn write_record() -> io::Result<()>{
 }
 
 fn write_handler() -> String {
-    let mut event = String::new();
-    let mut desc = String::from("test");
-    let record_id: usize = 1;
+    let mut event: String;
+    let mut desc: String = String::new();
+    let record_id: usize = 5;
 
     let mut day: u8;
     let mut month: u8;
@@ -119,7 +134,7 @@ fn write_handler() -> String {
     while {
         print!("Write an event name: ");
         event = read!();
-        event.contains(";") && event.contains(",")
+        (event.contains(";") && event.contains(",")) || event.is_empty()
     } {}
     
     
@@ -140,6 +155,13 @@ fn write_handler() -> String {
         print!("\nWrite the year of the event: ");
         year = read!();
         year < 2024
+    } {}
+
+    while {
+        print!("Write a description for the event name: ");
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut desc).expect("Error reading event description.");
+        desc.contains(";") && desc.contains(",")
     } {}
 
     let date = Date::new(day, month, year);

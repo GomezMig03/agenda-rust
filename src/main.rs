@@ -1,6 +1,6 @@
 use core::str;
+use std::fs::{read_to_string, File, OpenOptions};
 use std::io::{self, Write};
-use std::fs::{File, OpenOptions, read_to_string};
 use text_io::read;
 
 static AGENDA: &str = "./agenda.txt";
@@ -9,7 +9,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     main_loop()?;
     Ok(())
 }
-
 
 fn main_loop() -> io::Result<()> {
     let mut user_input: String = String::from("1");
@@ -42,36 +41,57 @@ struct Date {
 
 impl Date {
     fn new(day: u8, month: u8, year: u32) -> Date {
-        Date{day, month, year}
+        Date { day, month, year }
     }
     fn as_string(&self) -> String {
         format!("{}-{}-{}", self.day, self.month, self.year)
     }
 }
 
-struct Agenda{
+struct Agenda {
     event: String,
     date: Date,
     desc: String,
-    id: usize
+    id: usize,
 }
 
 impl Agenda {
     fn new(event: String, date: Date, desc: String, id: usize) -> Agenda {
-        Agenda{
-            event, date, desc, id,
+        Agenda {
+            event,
+            date,
+            desc,
+            id,
         }
     }
 
     fn as_string(&self) -> String {
         if self.id == 1 {
-            return format!("{};{};{};{}", self.id, self.event, self.date.as_string(), self.desc);
+            return format!(
+                "{};{};{};{}",
+                self.id,
+                self.event,
+                self.date.as_string(),
+                self.desc
+            );
         }
-        format!(",{};{};{};{}", self.id, self.event, self.date.as_string(), self.desc)
+        format!(
+            ",{};{};{};{}",
+            self.id,
+            self.event,
+            self.date.as_string(),
+            self.desc
+        )
     }
 
     fn display(&self) -> String {
-        format!("Id: {}\nEvent: {}\nDate: {}\nDescription: {}", self.id, self.event, self.date.as_string(), self.desc)
+        format!(
+            "Id: {}\nEvent: {}\nDate: {}\nDescription: {}",
+            self.id,
+            self.event,
+            self.date.as_string(),
+            self.desc
+        )
     }
 
     fn record_to_agenda(record: &str) -> Agenda {
@@ -85,9 +105,14 @@ impl Agenda {
 
         let date = Date::new(day, month, year);
 
-        let id: usize = record_parts[0].parse().expect("Error parsing id"); 
+        let id: usize = record_parts[0].parse().expect("Error parsing id");
 
-        Agenda { event: String::from(record_parts[1]), date, desc: String::from(record_parts[3]), id }
+        Agenda {
+            event: String::from(record_parts[1]),
+            date,
+            desc: String::from(record_parts[3]),
+            id,
+        }
     }
 }
 
@@ -99,11 +124,11 @@ fn get_file() -> io::Result<File> {
         .open(AGENDA)
 }
 
-fn read_agenda() -> io::Result<()>{
+fn read_agenda() -> io::Result<()> {
     let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
 
     let records: Vec<&str> = content.split(",").collect();
-    
+
     println!();
 
     for record in records {
@@ -114,7 +139,7 @@ fn read_agenda() -> io::Result<()>{
     Ok(())
 }
 
-fn write_record() -> io::Result<()>{
+fn write_record() -> io::Result<()> {
     let mut file = get_file()?;
     let record = write_handler();
 
@@ -136,8 +161,6 @@ fn write_handler() -> String {
         event = read!();
         (event.contains(";") && event.contains(",")) || event.is_empty()
     } {}
-    
-    
 
     while {
         print!("\nWrite the day of the event: ");
@@ -160,7 +183,9 @@ fn write_handler() -> String {
     while {
         print!("Write a description for the event name: ");
         io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut desc).expect("Error reading event description.");
+        io::stdin()
+            .read_line(&mut desc)
+            .expect("Error reading event description.");
         desc.contains(";") && desc.contains(",")
     } {}
 
@@ -170,3 +195,30 @@ fn write_handler() -> String {
 
     agenda.as_string()
 }
+
+fn write_to() {
+    let mut record_id: usize;
+    while {
+        print!("Write the id of the record to edit: ");
+        record_id = read!();
+        record_id > 0
+    } {}
+
+    let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
+
+    let records: Vec<&str> = content.split(",").collect();
+
+    for record in records {
+        let agenda = Agenda::record_to_agenda(record);
+        if (agenda.id == record_id) {
+            edit_record(agenda.id);
+        }
+    }
+}
+
+fn edit_record(id: usize) {
+    todo!();
+    println!();
+    print!("");
+}
+

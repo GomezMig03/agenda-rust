@@ -289,7 +289,6 @@ fn edit_record(old_agenda: Agenda) -> Agenda {
 
     while {
         print!("Write a new event name ({}): ", old_agenda.event);
-        agenda.event = read!();
 
         new_event = read!();
 
@@ -337,7 +336,7 @@ fn edit_record(old_agenda: Agenda) -> Agenda {
 
     while {
         print!(
-            "Write a new description for the event: \n({})",
+            "Write a new description for the event: ({})\n",
             old_agenda.desc
         );
         io::stdout().flush().unwrap();

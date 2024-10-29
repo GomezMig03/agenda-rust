@@ -293,7 +293,7 @@ fn edit_record(old_agenda: Agenda) -> Agenda {
         new_event = read!();
 
         if new_event.is_empty() {
-            new_event = agenda.event
+            new_event = agenda.event.clone();
         }
 
         new_event.contains(";") && new_event.contains(",")
@@ -345,6 +345,8 @@ fn edit_record(old_agenda: Agenda) -> Agenda {
             .expect("Error reading event description.");
         new_desc.contains(";") && new_desc.contains(",")
     } {}
+
+    agenda.desc = new_desc;
 
     agenda
 }

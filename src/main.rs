@@ -24,7 +24,7 @@ fn main_loop() -> io::Result<()> {
         match user_input.as_str() {
             "0" => return Ok(()),
             "1" => read_agenda()?,
-            "2" => todo!(),
+            "2" => write_to(),
             "3" => write_record()?,
             "4" => todo!(),
             _ => println!("Select a valid option."),
@@ -210,15 +210,90 @@ fn write_to() {
 
     for record in records {
         let agenda = Agenda::record_to_agenda(record);
-        if (agenda.id == record_id) {
-            edit_record(agenda.id);
+        if agenda.id == record_id {
+            edit_record(agenda);
         }
     }
 }
 
-fn edit_record(id: usize) {
-    todo!();
-    println!();
-    print!("");
-}
+fn edit_record(old_agenda: Agenda) -> Agenda {
+    let mut agenda = Agenda {
+        event: old_agenda.event.clone(),
+        date: Date {
+            day: old_agenda.date.day.clone(),
+            month: old_agenda.date.month.clone(),
+            year: old_agenda.date.year.clone(),
+        },
+        desc: old_agenda.desc.clone(),
+        id: old_agenda.id,
+    };
+    let mut new_event: String;
 
+    let mut new_desc: String = String::new();
+
+    let mut new_day: u8;
+    let mut new_month: u8;
+    let mut new_year: u32;
+
+    while {
+        print!("Write a new event name ({}): ", old_agenda.event);
+        agenda.event = read!();
+
+        new_event = read!();
+
+        if new_event.is_empty() {
+            new_event = agenda.event
+        }
+
+        new_event.contains(";") && new_event.contains(",")
+    } {}
+
+    agenda.event = new_event;
+
+    while {
+        print!(
+            "\nWrite a new day for the event ({}): ",
+            old_agenda.date.day
+        );
+        new_day = read!();
+
+        new_day > 31
+    } {}
+
+    agenda.date.day = new_day;
+
+    while {
+        print!(
+            "\nWrite a new month for the event ({}): ",
+            agenda.date.month
+        );
+        new_month = read!();
+
+        new_month > 12
+    } {}
+
+    agenda.date.month = new_month;
+
+    while {
+        print!("\nWrite the year of the event: ({})", old_agenda.date.year);
+        new_year = read!();
+
+        new_year < 2024
+    } {}
+
+    agenda.date.year = new_year;
+
+    while {
+        print!(
+            "Write a new description for the event: \n({})",
+            old_agenda.desc
+        );
+        io::stdout().flush().unwrap();
+        io::stdin()
+            .read_line(&mut new_desc)
+            .expect("Error reading event description.");
+        new_desc.contains(";") && new_desc.contains(",")
+    } {}
+
+    agenda
+}

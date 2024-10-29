@@ -1,7 +1,7 @@
 use core::str;
 use std::fs::{read_to_string, File, OpenOptions};
-use std::io::{self, read_to_string, Write};
-use std::task::Wake;
+use std::io::{self, Write};
+use std::usize;
 use text_io::read;
 
 static AGENDA: &str = "./agenda.txt";
@@ -25,9 +25,9 @@ fn main_loop() -> io::Result<()> {
         match user_input.as_str() {
             "0" => return Ok(()),
             "1" => read_agenda()?,
-            "2" => write_to(),
+            "2" => write_to()?,
             "3" => write_record()?,
-            "4" => todo!(),
+            "4" => delete_handler()?,
             _ => println!("Select a valid option."),
         }
     }
@@ -126,7 +126,7 @@ fn get_file() -> io::Result<File> {
 }
 
 fn empty_file() -> io::Result<()> {
-    OpenOptions::new().write(true).truncate(true).open(AGENDA);
+    let _ = OpenOptions::new().write(true).truncate(true).open(AGENDA);
 
     Ok(())
 }
@@ -146,6 +146,16 @@ fn read_agenda() -> io::Result<()> {
     Ok(())
 }
 
+fn delete_handler() -> io::Result<()> {
+    print!("\nWrite the id of the event you want to delete: ");
+
+    let id: usize = read!();
+
+    delete_record(id)?;
+
+    Ok(())
+}
+
 fn delete_record(id: usize) -> io::Result<()> {
     let content: String = read_to_string(AGENDA).expect("Error with the agenda.");
 
@@ -160,7 +170,8 @@ fn delete_record(id: usize) -> io::Result<()> {
         }
     }
 
-    rewrite(final_agenda);
+    empty_file()?;
+    rewrite(final_agenda)?;
 
     Ok(())
 }
@@ -232,7 +243,7 @@ fn write_handler() -> String {
     agenda.as_string()
 }
 
-fn write_to() {
+fn write_to() -> io::Result<()> {
     let mut record_id: usize;
     while {
         print!("Write the id of the record to edit: ");
@@ -257,7 +268,10 @@ fn write_to() {
         }
     }
 
+    empty_file();
     rewrite(final_agenda);
+
+    Ok(())
 }
 
 fn edit_record(old_agenda: Agenda) -> Agenda {

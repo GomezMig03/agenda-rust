@@ -1,6 +1,7 @@
 use core::str;
 use std::fs::{read_to_string, File, OpenOptions};
-use std::io::{self, Write};
+use std::io::{self, read_to_string, Write};
+use std::task::Wake;
 use text_io::read;
 
 static AGENDA: &str = "./agenda.txt";
@@ -124,6 +125,12 @@ fn get_file() -> io::Result<File> {
         .open(AGENDA)
 }
 
+fn empty_file() -> io::Result<()> {
+    OpenOptions::new().write(true).truncate(true).open(AGENDA);
+
+    Ok(())
+}
+
 fn read_agenda() -> io::Result<()> {
     let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
 
@@ -134,6 +141,35 @@ fn read_agenda() -> io::Result<()> {
     for record in records {
         let agenda = Agenda::record_to_agenda(record);
         println!("{}\n", agenda.display());
+    }
+
+    Ok(())
+}
+
+fn delete_record(id: usize) -> io::Result<()> {
+    let content: String = read_to_string(AGENDA).expect("Error with the agenda.");
+
+    let records: Vec<&str> = content.split(",").collect();
+
+    let mut final_agenda: Vec<Agenda> = vec![];
+
+    for record in records {
+        let agenda = Agenda::record_to_agenda(record);
+        if agenda.id != id {
+            final_agenda.push(agenda);
+        }
+    }
+
+    rewrite(final_agenda);
+
+    Ok(())
+}
+
+fn rewrite(agendas: Vec<Agenda>) -> io::Result<()> {
+    let mut file = get_file()?;
+
+    for agenda in agendas {
+        write!(file, "{}", agenda.as_string())?;
     }
 
     Ok(())
@@ -208,12 +244,20 @@ fn write_to() {
 
     let records: Vec<&str> = content.split(",").collect();
 
+    let mut final_agenda: Vec<Agenda> = vec![];
+
     for record in records {
         let agenda = Agenda::record_to_agenda(record);
+
         if agenda.id == record_id {
-            edit_record(agenda);
+            let new_agenda = edit_record(agenda);
+            final_agenda.push(new_agenda);
+        } else {
+            final_agenda.push(agenda);
         }
     }
+
+    rewrite(final_agenda);
 }
 
 fn edit_record(old_agenda: Agenda) -> Agenda {

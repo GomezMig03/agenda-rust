@@ -125,6 +125,16 @@ fn get_file() -> io::Result<File> {
         .open(AGENDA)
 }
 
+fn get_last_id() -> usize {
+    let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
+
+    let records: Vec<&str> = content.split(",").collect();
+
+    let agenda = Agenda::record_to_agenda(records.last());
+
+    agenda.id
+}
+
 fn empty_file() {
     let _ = OpenOptions::new().write(true).truncate(true).open(AGENDA);
 }
@@ -193,7 +203,7 @@ fn write_record() -> io::Result<()> {
 fn write_handler() -> String {
     let mut event: String;
     let mut desc: String = String::new();
-    let record_id: usize = 5;
+    let record_id: usize = get_last_id() + 1;
 
     let mut day: u8;
     let mut month: u8;

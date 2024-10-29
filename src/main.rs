@@ -125,10 +125,8 @@ fn get_file() -> io::Result<File> {
         .open(AGENDA)
 }
 
-fn empty_file() -> io::Result<()> {
+fn empty_file() {
     let _ = OpenOptions::new().write(true).truncate(true).open(AGENDA);
-
-    Ok(())
 }
 
 fn read_agenda() -> io::Result<()> {
@@ -151,12 +149,12 @@ fn delete_handler() -> io::Result<()> {
 
     let id: usize = read!();
 
-    delete_record(id)?;
+    delete_record(id);
 
     Ok(())
 }
 
-fn delete_record(id: usize) -> io::Result<()> {
+fn delete_record(id: usize) {
     let content: String = read_to_string(AGENDA).expect("Error with the agenda.");
 
     let records: Vec<&str> = content.split(",").collect();
@@ -170,10 +168,8 @@ fn delete_record(id: usize) -> io::Result<()> {
         }
     }
 
-    empty_file()?;
-    rewrite(final_agenda)?;
-
-    Ok(())
+    empty_file();
+    let _ = rewrite(final_agenda);
 }
 
 fn rewrite(agendas: Vec<Agenda>) -> io::Result<()> {
@@ -244,12 +240,10 @@ fn write_handler() -> String {
 }
 
 fn write_to() -> io::Result<()> {
-    let mut record_id: usize;
-    while {
-        print!("Write the id of the record to edit: ");
-        record_id = read!();
-        record_id > 0
-    } {}
+    let record_id: usize;
+
+    print!("Write the id of the record to edit: ");
+    record_id = read!();
 
     let content: String = read_to_string(AGENDA).expect("Error reading agenda.");
 
@@ -269,7 +263,7 @@ fn write_to() -> io::Result<()> {
     }
 
     empty_file();
-    rewrite(final_agenda);
+    let _ = rewrite(final_agenda);
 
     Ok(())
 }
